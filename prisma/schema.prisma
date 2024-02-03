@@ -1,0 +1,163 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String       @id @default(uuid()) @map("_id")
+  fullName      String
+  email         String
+  password      String
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt()
+  image         String
+  order         Order?       @relation(fields: [orderId], references: [id])
+  orderId       String?
+  cart          Cart?        @relation(fields: [cartId], references: [id])
+  cartId        String?
+  review        Review?      @relation(fields: [reviewId], references: [id])
+  reviewId      String?
+  userAddress   UserAddress? @relation(fields: [userAddressId], references: [id])
+  userAddressId String?
+  Session       Session?     @relation(fields: [sessionId], references: [id])
+  sessionId     String?
+  Message       Message?     @relation(fields: [messageId], references: [id])
+  messageId     String?
+}
+
+model Session {
+  id          String   @id @default(uuid()) @map("_id")
+  userId      String
+  token       String   @unique
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt()
+  expiresAt   DateTime
+  invalidated Boolean  @default(false)
+  user        User[]
+}
+
+model Product {
+  id               String          @id @default(uuid()) @map("_id")
+  type             String
+  dateAdded        DateTime        @default(now())
+  order            Order?          @relation(fields: [orderId], references: [id])
+  orderId          String?
+  cart             Cart?           @relation(fields: [cartId], references: [id])
+  cartId           String?
+  review           Review?         @relation(fields: [reviewId], references: [id])
+  reviewId         String?
+  ProductVariant   ProductVariant? @relation(fields: [productVariantId], references: [id])
+  productVariantId String?
+}
+
+model ProductVariant {
+  id        String    @id @default(uuid()) @map("_id")
+  productId String
+  size      String
+  color     String
+  images    String[]
+  product   Product[]
+}
+
+model Order {
+  id            String       @id @default(uuid()) @map("_id")
+  userId        String
+  productId     String
+  quantity      Int
+  orderDate     DateTime     @default(now())
+  status        String
+  user          User[]
+  product       Product[]
+  payment       Payment?     @relation(fields: [paymentId], references: [id])
+  paymentId     String?
+  shipping      Shipping?    @relation(fields: [shippingId], references: [id])
+  shippingId    String?
+  Transaction   Transaction? @relation(fields: [transactionId], references: [id])
+  transactionId String?
+}
+
+model Cart {
+  id        String    @id @default(uuid()) @map("_id")
+  userId    String
+  productId String
+  quantity  Int
+  status    String
+  user      User[]
+  product   Product[]
+}
+
+model Payment {
+  id            String       @id @default(uuid()) @map("_id")
+  orderId       String
+  amount        Int
+  paymentStatus String
+  order         Order[]
+  Transaction   Transaction? @relation(fields: [transactionId], references: [id])
+  transactionId String?
+}
+
+model Review {
+  id        String    @id @default(uuid()) @map("_id")
+  userId    String
+  productId String
+  rating    Int
+  comment   String
+  date      DateTime  @default(now())
+  user      User[]
+  product   Product[]
+}
+
+model Category {
+  id           String @id @default(uuid()) @map("_id")
+  categoryName String
+  description  String
+}
+
+model Shipping {
+  id              String  @id @default(uuid()) @map("_id")
+  shippingId      String
+  orderId         String
+  shippingAddress String
+  shippingStatus  String
+  order           Order[]
+}
+
+model Promotion {
+  id                 String @id @default(uuid()) @map("_id")
+  discountPercentage Float
+  expiryDate         String
+}
+
+model UserAddress {
+  id             String @id @default(uuid()) @map("_id")
+  userId         String
+  addressDetails String
+  user           User[]
+}
+
+model Transaction {
+  id          String    @id @default(uuid()) @map("_id")
+  orderId     String
+  paymentId   String?
+  amount      Int
+  description String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt()
+  order       Order[]
+  payment     Payment[]
+}
+
+model Message {
+  id        String   @id @default(uuid()) @map("_id")
+  userId    String
+  content   String
+  createdAt DateTime @default(now())
+  user      User[]
+}
